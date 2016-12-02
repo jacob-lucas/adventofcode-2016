@@ -59,7 +59,12 @@ object Day01 {
       case x :: xs =>
         println("Current loc = " + loc + ", facing: " + heading + ", processing: " + x)
         val (newLocs, h) = visitedLocations(loc, x, heading)
-        walkToEnd(xs, locs ++ newLocs, h)
+        val seenLocs = newLocs.filter(l => locs.count(_ == l) == 1)
+        if (seenLocs.nonEmpty) {
+          seenLocs.head
+        } else {
+          walkToEnd(xs, locs ++ newLocs, h)
+        }
       case Nil => loc
     }
   }
