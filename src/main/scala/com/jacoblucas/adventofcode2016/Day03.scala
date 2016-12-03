@@ -1,5 +1,6 @@
 package com.jacoblucas.adventofcode2016
 
+import scala.annotation.tailrec
 import scala.io.Source
 
 object Day03 {
@@ -11,6 +12,22 @@ object Day03 {
   def isTriangle(tri: Array[Int]): Boolean = {
     if (tri.length != 3) false
     else tri.permutations.forall(t => t(0) + t(1) > t(2))
+  }
+
+  @tailrec
+  def toColumnarTriangles(pos: (Int, Int), input: Array[Array[Int]], output:Array[Array[Int]]): Array[Array[Int]] = {
+    if (pos == (0, 3)) {
+      output
+    } else {
+      val i = pos._1
+      val j = pos._2
+
+      val arr = Array[Int](input(i)(j), input(i+1)(j), input(i+2)(j))
+
+      val nextI = if (i+3 == input.length) 0 else i+3
+      val nextJ = if (i+3 == input.length) j+1 else j
+      toColumnarTriangles((nextI, nextJ), input, output :+ arr)
+    }
   }
 
   def main(args: Array[String]): Unit = {
@@ -25,9 +42,11 @@ object Day03 {
           }
         }))
       .filter(_.length == 3)
-      .toList
+      .toArray
 
-    println(triangles count isTriangle)
+    val colTriangles = toColumnarTriangles((0, 0), triangles, Array(Array()))
+
+    println(colTriangles count isTriangle)
   }
 
 }
