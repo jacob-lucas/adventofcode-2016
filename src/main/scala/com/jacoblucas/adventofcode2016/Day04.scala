@@ -46,6 +46,27 @@ class Room(val name: String, val sectorID: Int, val checksum: String) {
     check(checksum, maxHeap, 0)
   }
 
+  def decrypt: String = {
+    def rotate(c: Char): Char = {
+      c match {
+        case 'z' => 'a'
+        case _ => (c+1).toChar
+      }
+    }
+
+    @tailrec
+    def rotateN(c: Char, n: Int): Char = {
+      if (c == '-') ' '
+      else if (n == 0) c
+      else rotateN(rotate(c), n-1)
+    }
+
+    name
+      .toCharArray
+      .map(c => rotateN(c, sectorID))
+      .mkString
+  }
+
   override def toString: String = {
     name + "-" + sectorID + "[" + checksum + "]"
   }
@@ -78,8 +99,11 @@ object Day04 {
 
   def main(args: Array[String]): Unit = {
     val lines = Source.fromInputStream(getClass.getResourceAsStream("/day04-input.txt")).getLines()
-    val rooms = lines flatMap Room.build
-    println(rooms filter (_.isReal) map(_.sectorID) sum)
+    val rooms = lines flatMap Room.build filter (_.isReal)
+    rooms.foreach(r => {
+      val decrypted = r.decrypt
+      println(r + " = " + decrypted)
+    })
   }
 
 }
