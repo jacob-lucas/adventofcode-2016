@@ -21,12 +21,30 @@ object Day05 {
   }
 
   def password(doorId: String): String = {
-    var index = 0
-    Array.fill(8)({
-      val (hash, idx) = findHash(doorId, index)
-      index = idx + 1
-      hash.charAt(5)
-    }).mkString
+    def decrypt(n: Int, index: Int, arr: Array[Char]): String = {
+      if (n > 7) arr.mkString
+      else {
+        val (hash, idx) = findHash(doorId, index)
+        val insertIndex = hash.charAt(5)
+        try {
+          val insertIndexInt = insertIndex.asDigit
+          if (insertIndexInt < 0 || insertIndexInt > 7) {
+            throw new RuntimeException("bad index")
+          } else {
+            if (arr(insertIndexInt) != '_') {
+              throw new RuntimeException("already found char for index")
+            }
+            arr(insertIndexInt) = hash.charAt(6)
+            println(arr.mkString)
+            decrypt(n + 1, idx + 1, arr)
+          }
+        } catch {
+          case _: Throwable => decrypt(n, idx + 1, arr)
+        }
+      }
+    }
+
+    decrypt(0, 0, Array.fill(8)('_'))
   }
 
   def main(args: Array[String]): Unit = {
