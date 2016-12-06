@@ -17,7 +17,7 @@ object Day06 {
       val ch = counts
         .distinct
         .sortBy(_._2)
-        .last
+        .head
         ._1
 
       errorCorrectMessage(messages, i + 1, length, msg :+ ch)
