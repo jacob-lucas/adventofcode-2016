@@ -75,7 +75,7 @@ object Day07 {
 
   def main(args: Array[String]): Unit = {
     val lines = Source.fromInputStream(getClass.getResourceAsStream("/day07-input.txt")).getLines().toList
-    val tls = lines.filter(tls)
+    val tls = lines.filter(supportsTLS)
     tls foreach println
     println(tls.length)
 
