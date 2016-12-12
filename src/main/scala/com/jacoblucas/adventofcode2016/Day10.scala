@@ -116,6 +116,8 @@ object Day10 {
       .toMap
 
     assign(assignments, botMap)
+
+    println(outputMap(0).chips.head * outputMap(1).chips.head * outputMap(2).chips.head)
   }
 
 }
