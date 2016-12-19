@@ -13,8 +13,8 @@ case class Generator(chipCompatibility: Microchip) extends Material {
 case class Elevator(level: Int, minCapacity: Int, maxCapacity: Int)
 
 case class Floor(level: Int, materials: List[Material]) {
-  def add(ms: List[Material]): Floor          = Floor(level, materials ++ ms)
-  def remove(ms: List[Material]): Floor       = Floor(level, materials.filterNot(ms.contains(_)))
+  def add(ms: List[Material]): Floor          = Floor(level, (materials ++ ms).sortBy(_.toString))
+  def remove(ms: List[Material]): Floor       = Floor(level, materials.filterNot(ms.contains(_)).sortBy(_.toString))
   def toString(hasElevator: Boolean): String  = "|F" + level + " " + (if (hasElevator) "E " else "  ") + "| " + materials.sortBy(_.toString).mkString(" ")
 }
 
@@ -48,11 +48,17 @@ case class Facility(floors: List[Floor], elevator: Elevator) {
   def possibleMoves: List[Move] = {
     val currFloor = floors(elevator.level - 1)
     val aboveFloor = if (elevator.level == floors.length) None else Some(floors(elevator.level))
-    val belowFloor = if (elevator.level == 1) None else Some(floors(elevator.level - 2))
+    val belowFloor =
+      if (elevator.level == 1)
+        None
+      else {
+        val fl = floors(elevator.level - 2)
+        if (fl.materials.isEmpty) None else Some(fl)
+      }
 
     def getMoves(floor: Option[Floor]): List[Move] = {
       floor match {
-        case Some(f) if currFloor.materials.nonEmpty => // currFloor.materials.permutations.toList.map(ms => Move(currFloor, f, ms))
+        case Some(f) if currFloor.materials.nonEmpty =>
           val ms = for {
             n <- elevator.minCapacity to elevator.maxCapacity
           } yield {
@@ -62,7 +68,7 @@ case class Facility(floors: List[Floor], elevator: Elevator) {
               .map(ms => Move(currFloor, f, ms.take(n)))
               .toList
           }
-          ms.flatten.toList
+          ms.flatten.toList.distinct
         case _ => List()
       }
     }
@@ -124,27 +130,24 @@ object Day11 {
     val thuliumGen = Generator(thuliumChip)
     val curiumGen = Generator(curiumChip)
 
-    val hydrogen = Microchip("hydrogen")
-    val lithium = Microchip("lithium")
-    val hydrogenGen = Generator(hydrogen)
-    val lithiumGen = Generator(lithium)
-
-//    val f1: Floor = Floor(1, List(strontiumChip, plutoniumChip, strontiumGen, plutoniumGen).sortBy(_.toString))
-//    val f2: Floor = Floor(2, List(rutheniumChip, curiumChip, thuliumGen, rutheniumGen, curiumGen).sortBy(_.toString))
-//    val f3: Floor = Floor(3, List(thuliumChip))
-    val f1: Floor = Floor(1, List(hydrogen, lithium))//.sortBy(_.toString))
-    val f2: Floor = Floor(2, List(hydrogenGen))
-    val f3: Floor = Floor(3, List(lithiumGen))
+    val f1: Floor = Floor(1, List(strontiumChip, plutoniumChip, strontiumGen, plutoniumGen).sortBy(_.toString))
+    val f2: Floor = Floor(2, List(rutheniumChip, curiumChip, thuliumGen, rutheniumGen, curiumGen).sortBy(_.toString))
+    val f3: Floor = Floor(3, List(thuliumChip))
     val f4: Floor = Floor(4, List())
 
+    var win: Option[(Facility, List[Move])] = None
     val visited = mutable.Set[Facility]()
     val queue = new mutable.Queue[(Facility, List[Move])]()
     queue.enqueue((Facility(List(f1, f2, f3, f4), Elevator(1, 1, 2)), List()))
+
     while (queue.nonEmpty) {
       val (f, ms) = queue.dequeue()
       if (f.score == f.floors.length * f.floors.map(_.materials.length).sum) {
         println("WIN!")
+        win = Some((f, ms))
         queue.clear()
+
+        println(f)
       } else {
         if (!visited.contains(f)) {
           // create new facilities based on f
@@ -158,9 +161,17 @@ object Day11 {
           })
         }
       }
+    }
 
-      println(f)
-      println(ms.length)
+    win match {
+      case Some(w) =>
+        println("Moves:")
+        for {
+          i <- 1 to w._2.length
+        } {
+          println(i + ") " + w._2(i-1))
+        }
+      case None =>
     }
   }
 }
