@@ -68,6 +68,27 @@ object Day13 {
     plan(goal._2)(goal._1) = "E"
     plan.foreach(p => println(p.mkString))
     println(counts.sortBy(_.length).head.length)
+
+    val goals = for {
+      x <- 0 until wid
+      y <- 0 until len
+    } yield {
+      println("Checking: " + (x, y))
+      counts.clear()
+      findPath((1,1), (x,y), List(), List())
+      if (counts.nonEmpty) {
+        val path = counts.sortBy(_.length).head
+        if (path.length <= 50) {
+          Some((x, y))
+        } else {
+          None
+        }
+      } else {
+        None
+      }
+    }
+
+    println(goals.count(_.nonEmpty))
   }
 
 }
